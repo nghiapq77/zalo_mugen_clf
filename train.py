@@ -7,17 +7,19 @@ from config import sliceSize, validationRatio, batchSize, nEpoch
 from songToData import createSlicesFromSpectrograms, createSpectrogramsFromAudio
 from model import getDataset, createModel
 
-createSpectrogramsFromAudio("data/train_full/", "train.csv")
-createSlicesFromSpectrograms("data/train_full/spectrograms/", sliceSize)
+#createSpectrogramsFromAudio("data/train_full/", "train.csv")
+#createSlicesFromSpectrograms("data/train_full/spectrograms/", sliceSize)
 
 slicePath = "data/train_full/spectrograms/slices/"
 genres = os.listdir(slicePath)
 genres = [filename for filename in genres if os.path.isdir(slicePath+filename)]
 nClasses = len(genres)
+print(genres)
 
 train_x, train_y, validation_x, validation_y = getDataset(slicePath, genres, sliceSize, validationRatio)
 
 model = createModel(nClasses, sliceSize)
+
 #Train the model
 print("[+] Training the model...")
 run_id = "MusicGenres - "+str(batchSize)+" "+''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(10))

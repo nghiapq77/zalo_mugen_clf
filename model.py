@@ -18,7 +18,7 @@ from config import datasetPath
 #processing input for train/test image
 def getProcessedData(img, imgSize):
     imgData = np.asarray(img, dtype=np.uint8).reshape(imgSize, imgSize, 1)
-    imgData = imgData/255
+    imgData = imgData/255.
     return imgData
 def getImageData(filename, imgSize):
     img = Image.open(filename)
@@ -33,7 +33,7 @@ def createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
         filenames = os.listdir(slicePath+genre)
         filenames = [filename for filename in filenames]
         #capped number of slices
-        filenames = filenames[:2000] 
+        filenames = filenames[:1000] 
         #adding data
         for filename in filenames:
             imgData = getImageData(slicePath+genre+"/"+filename, sliceSize)
@@ -51,7 +51,38 @@ def createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
     validation_y = np.asarray(y[-nValidation:])
     saveDataset(train_x, train_y, validation_x, validation_y, genres, sliceSize)
     return train_x, train_y, validation_x, validation_y
+###############3
+"""datasetforkeras"""
+def createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
+    data = []
+    
+    for genre in genres:
+        #get slices
+        filenames = os.listdir(slicePath+genre)
+        filenames = [filename for filename in filenames]
+        #capped number of slices
+        cappedSlices = 200
+        filenames = filenames[:cappedSlices] 
+        #adding data
+        for filename in filenames:
+            img = Image.open(slicePath+genre+"/"+filename)
+            imgData = np.asarray(img, dtype=np.uint8)
+            imgData = imgData/255.
+            label = [1. if genre == g else 0. for g in genres]
+            data.append((imgData, label))
 
+    shuffle(data)
+    #splitting
+    x,y = zip(*data)
+    nValidation = int(len(x)*validationRatio)
+    nTrain = len(x)-nValidation
+    train_x = np.asarray(x[:nTrain]).reshape([-1, sliceSize, sliceSize, 1])
+    train_y = np.asarray(y[:nTrain])
+    validation_x = np.asarray(x[-nValidation:]).reshape([-1, sliceSize, sliceSize, 1])
+    validation_y = np.asarray(y[-nValidation:])
+    saveDataset(train_x, train_y, validation_x, validation_y, genres, sliceSize)
+    return train_x, train_y, validation_x, validation_y
+######################3
 def getDatasetName(sliceSize):
     name = "{}sliceSize".format(sliceSize)
     return name
@@ -89,30 +120,33 @@ def getDataset(slicePath, genres, sliceSize, validationRatio):
         print("[+] Using existing dataset")
     
     return loadDataset(genres, sliceSize)
-
+def getKerasDataset(slicePath, genres, sliceSize, validationRatio):
+    print("[+] Dataset name: {}".format(getDatasetName(sliceSize)))
+    if not os.path.isfile(datasetPath+"train_x_"+getDatasetName(sliceSize)+".p"):
+        print("[+] Creating dataset with slices of size {}".format(sliceSize))
+        createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio) 
+    else:
+        print("[+] Using existing dataset")
+    
+    return loadDataset(genres, sliceSize)
 #building model
 def createModel(nbClasses,imageSize):
-	print("[+] Creating model...")
-	convnet = input_data(shape=[None, imageSize, imageSize, 1], name='input')
-
-	convnet = conv_2d(convnet, 64, 2, activation='elu', weights_init="Xavier")
-	convnet = max_pool_2d(convnet, 2)
-	
-	convnet = conv_2d(convnet, 128, 2, activation='elu', weights_init="Xavier")
-	convnet = max_pool_2d(convnet, 2)
-
-	convnet = conv_2d(convnet, 256, 2, activation='elu', weights_init="Xavier")
-	convnet = max_pool_2d(convnet, 2)
-
-	convnet = conv_2d(convnet, 512, 2, activation='elu', weights_init="Xavier")
-	convnet = max_pool_2d(convnet, 2)
-
-	convnet = fully_connected(convnet, 1024, activation='elu')
-	convnet = dropout(convnet, 0.5)
-
-	convnet = fully_connected(convnet, nbClasses, activation='softmax')
-	convnet = regression(convnet, optimizer='rmsprop', loss='categorical_crossentropy')
-
-	model = tflearn.DNN(convnet)
-	print("    Model created!")
-	return model
+    print("[+] Creating model...")
+    convnet = input_data(shape=[None, imageSize, imageSize, 1], name='input')
+    convnet = conv_2d(convnet, 64, 2, activation='elu', weights_init="Xavier")
+    convnet = max_pool_2d(convnet, 2)
+    convnet = conv_2d(convnet, 128, 2, activation='elu', weights_init="Xavier")
+    convnet = max_pool_2d(convnet, 2)
+    convnet = conv_2d(convnet, 256, 2, activation='elu', weights_init="Xavier")
+    convnet = max_pool_2d(convnet, 2)
+    convnet = conv_2d(convnet, 512, 2, activation='elu', weights_init="Xavier")
+    convnet = max_pool_2d(convnet, 2)
+    convnet = fully_connected(convnet, 1024, activation='elu')
+    convnet = dropout(convnet, 0.5)
+    convnet = fully_connected(convnet, 1024, activation='elu')
+    convnet = dropout(convnet, 0.5)
+    convnet = fully_connected(convnet, nbClasses, activation='softmax')
+    convnet = regression(convnet, optimizer='adam', loss='categorical_crossentropy')
+    model = tflearn.DNN(convnet)
+    print("    Model created!")
+    return model

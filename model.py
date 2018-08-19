@@ -14,12 +14,23 @@ from random import shuffle
 import pickle
 from config import validationRatio
 from config import datasetPath
+import scipy.io as scipy
+
+def saveAsMat(matrix,name):
+    print("Saving " + name)
+    pathName = '/Users/mpxt2/'+name +'.mat'
+    scipy.savemat(pathName, mdict={name: matrix})
+    print("Saving " + name  + " sucssfully")
+
+def convertOutputToGenre(output):
+    return np.argmax(output,axis=1)
 
 #processing input for train/test image
 def getProcessedData(img, imgSize):
     imgData = np.asarray(img, dtype=np.uint8).reshape(imgSize, imgSize, 1)
-    imgData = imgData/255
+    imgData = imgData/255.
     return imgData
+
 def getImageData(filename, imgSize):
     img = Image.open(filename)
     imgData = getProcessedData(img, imgSize)
@@ -91,7 +102,7 @@ def getDataset(slicePath, genres, sliceSize, validationRatio):
     return loadDataset(genres, sliceSize)
 
 #building model
-def createModel(nbClasses,imageSize):
+def createModel(nbClasses,imageSize,learningRate):
 	print("[+] Creating model...")
 	convnet = input_data(shape=[None, imageSize, imageSize, 1], name='input')
 
@@ -111,7 +122,7 @@ def createModel(nbClasses,imageSize):
 	convnet = dropout(convnet, 0.5)
 
 	convnet = fully_connected(convnet, nbClasses, activation='softmax')
-	convnet = regression(convnet, optimizer='rmsprop', loss='categorical_crossentropy')
+	convnet = regression(convnet, learning_rate= learningRate, optimizer='rmsprop', loss='categorical_crossentropy')
 
 	model = tflearn.DNN(convnet)
 	print("    Model created!")

@@ -1,0 +1,2 @@
+model_checkpoint_path: "/Users/mpxt2/bk/zaloAI/zalo_mugen_clf/zalo_mugen_clf_model.tflearn"
+all_model_checkpoint_paths: "/Users/mpxt2/bk/zaloAI/zalo_mugen_clf/zalo_mugen_clf_model.tflearn"

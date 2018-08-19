@@ -1,7 +1,7 @@
 #Path
 datasetPath = "data/dataset/"
 #Spectrogram resolution
-pixelPerSecond = 50
+pixelPerSecond = 10
 
 #Slice parameters
 sliceSize = 128
@@ -11,5 +11,5 @@ validationRatio = 0.2
 
 #Model parameters
 batchSize = 128
-learningRate = 0.001
+learningRate = 0.000001
 nEpoch = 5

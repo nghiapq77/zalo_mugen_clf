@@ -6,6 +6,8 @@ import os
 import errno
 import numpy as np
 import tflearn
+import tensorflow as tf
+from tensorflow import keras
 from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.estimator import regression
@@ -44,7 +46,7 @@ def createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
         filenames = os.listdir(slicePath+genre)
         filenames = [filename for filename in filenames]
         #capped number of slices
-        filenames = filenames[:2000] 
+        filenames = filenames[:1000] 
         #adding data
         for filename in filenames:
             imgData = getImageData(slicePath+genre+"/"+filename, sliceSize)
@@ -62,6 +64,64 @@ def createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
     validation_y = np.asarray(y[-nValidation:])
     saveDataset(train_x, train_y, validation_x, validation_y, genres, sliceSize)
     return train_x, train_y, validation_x, validation_y
+###############3
+"""datasetforkeras"""
+def createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
+    data = []
+    
+    for genre in genres:
+        #get slices
+        filenames = os.listdir(slicePath+genre)
+        filenames = [filename for filename in filenames]
+        #capped number of slices
+        cappedSlices = 5000
+        filenames = filenames[:cappedSlices] 
+        #adding data
+        for filename in filenames:
+            img = Image.open(slicePath+genre+"/"+filename)
+            imgData = np.asarray(img, dtype=np.uint8)
+            imgData = imgData/255.
+            label = [1. if genre == g else 0. for g in genres]
+            data.append((imgData, label))
+
+    shuffle(data)
+    #splitting
+    x,y = zip(*data)
+    nValidation = int(len(x)*validationRatio)
+    nTrain = len(x)-nValidation
+    train_x = np.asarray(x[:nTrain]).reshape([-1, sliceSize, sliceSize, 1])
+    train_y = np.asarray(y[:nTrain])
+    validation_x = np.asarray(x[-nValidation:]).reshape([-1, sliceSize, sliceSize, 1])
+    validation_y = np.asarray(y[-nValidation:])
+    saveDataset(train_x, train_y, validation_x, validation_y, genres, sliceSize)
+    return train_x, train_y, validation_x, validation_y
+######################
+
+def createKerasTestDataFromSlices(slicePath, genres, sliceSize, validationRatio):
+    data = []
+    
+
+    for genre in genres:
+        print("Cteating test data with genre " + str(genre))
+        #get slices
+        filenames = os.listdir(slicePath+genre)
+        filenames = [filename for filename in filenames]
+        #capped number of slices
+        cappedSlices = 100
+        shuffle(filenames)
+        filenames = filenames[:cappedSlices] 
+        #adding data
+        for filename in filenames:
+            img = Image.open(slicePath+genre+"/"+filename)
+            imgData = np.asarray(img, dtype=np.uint8)
+            imgData = imgData/255.
+            label = [1. if genre == g else 0. for g in genres]
+            data.append((imgData, label,filename.split('_')[1]))
+        print("Cteate test data with genre " + str(genre) + " succes")
+
+    #splitting
+    test_x,test_y,idMusic = zip(*data)
+    return np.asarray(test_x).reshape([-1, sliceSize, sliceSize, 1]), np.array(test_y), np.array(idMusic)
 
 def getDatasetName(sliceSize):
     name = "{}sliceSize".format(sliceSize)
@@ -100,7 +160,62 @@ def getDataset(slicePath, genres, sliceSize, validationRatio):
         print("[+] Using existing dataset")
     
     return loadDataset(genres, sliceSize)
+def getKerasDataset(slicePath, genres, sliceSize, validationRatio):
+    print("[+] Dataset name: {}".format(getDatasetName(sliceSize)))
+    if not os.path.isfile(datasetPath+"train_x_"+getDatasetName(sliceSize)+".p"):
+        print("[+] Creating dataset with slices of size {}".format(sliceSize))
+        createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio) 
+    else:
+        print("[+] Using existing dataset")
+    
+    return loadDataset(genres, sliceSize)
 
+def createKerasModel(imageSize,nClasses):
+    model =   keras.Sequential([
+        keras.layers.Conv2D(
+            input_shape=[imageSize,imageSize,1],
+            filters=64,
+            kernel_size=2,
+            padding="same",
+            activation="elu"
+        ),
+        keras.layers.MaxPooling2D(
+            pool_size=2
+        ),
+        keras.layers.Conv2D(
+            filters=128,
+            kernel_size=2,
+            padding="same",
+            activation="elu"
+        ),
+        keras.layers.MaxPooling2D(
+            pool_size=2
+        ),
+        keras.layers.Conv2D(
+            filters=256,
+            kernel_size=2,
+            padding="same",
+            activation="elu"
+        ),
+        keras.layers.MaxPooling2D(
+            pool_size=2
+        ),
+        keras.layers.Conv2D(
+            filters=512,
+            kernel_size=2,
+            padding="same",
+            activation="elu"
+        ),
+        keras.layers.MaxPooling2D(
+            pool_size=2
+        ),
+        keras.layers.Flatten(),
+        keras.layers.Dense(128, activation='elu'),
+        keras.layers.Dropout(0.5),
+        keras.layers.Dense(nClasses, activation='softmax')
+    ])
+    return model
+    
 #building model
 def createModel(nbClasses,imageSize,learningRate):
 	print("[+] Creating model...")
@@ -118,7 +233,7 @@ def createModel(nbClasses,imageSize,learningRate):
 	convnet = conv_2d(convnet, 512, 2, activation='elu', weights_init="Xavier")
 	convnet = max_pool_2d(convnet, 2)
 
-	convnet = fully_connected(convnet, 1024, activation='elu')
+	convnet = fully_connected(convnet, 1028, activation='elu')
 	convnet = dropout(convnet, 0.5)
 
 	convnet = fully_connected(convnet, nbClasses, activation='softmax')

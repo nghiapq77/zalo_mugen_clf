@@ -1,5 +1,5 @@
 #Path
-datasetPath = "data/dataset/"
+datasetPath = "data/kerasDataset/"
 #Spectrogram resolution
 pixelPerSecond = 10
 

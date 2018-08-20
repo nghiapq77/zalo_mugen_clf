@@ -2,3 +2,9 @@ data
 config.pyc
 model.pyc
 songToData.pyc
+keras_model.h5
+checkpoint
+melspectro.py
+test.py
+keras_model1.h5
+

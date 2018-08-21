@@ -12,4 +12,4 @@ validationRatio = 0.2
 #Model parameters
 batchSize = 128
 learningRate = 0.000001
-nEpoch = 5
+nEpoch = 1

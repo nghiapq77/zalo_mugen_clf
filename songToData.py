@@ -58,6 +58,13 @@ def createSpectrogramsFromAudio(audioPath, csvfilename): #also get its genre fro
             newfilename = rows[1]+"_"+rows[0]
             createSpectrogram(rows[0], newfilename, audioPath)
 
+def createTestSpectrogramsFromAudio(audioPath, csvfilename):
+    path = os.path.join(audioPath, csvfilename)
+    with open(path, mode='r') as infile:
+        render = csv.reader(infile)
+        for row in render:
+            createSpectrogram(row[0],row[0], audioPath)
+
 #Create slices of spectrograms
 def sliceSpectrogram(specPath, filename, size):
     #get genre
@@ -81,7 +88,28 @@ def sliceSpectrogram(specPath, filename, size):
         imgTmp = img.crop((startPixel, 1, startPixel+size, size+1))
         imgTmp.save(slicePath+"{}_{}.png".format(filename[:-4], i))
 
+def sliceTestSpectrogram(specPath, filename, size):
+    img = Image.open(specPath+filename)
+    width, height = img.size
+    nSamples = int(width/size)
+    slicePath = specPath+"slice/"
+    if not os.path.exists(os.path.dirname(slicePath)):
+        try:
+            os.makedirs(os.path.dirname(slicePath))
+        except OSError as exc:
+            if exc.errno != errno.EEXIST:
+                raise
+    for i in range(nSamples):
+        startPixel = i*size
+        imgTmp = img.crop((startPixel, 1, startPixel+size, size+1))
+        imgTmp.save(slicePath+"{}_{}.png".format(filename[:-4], i))
+
 def createSlicesFromSpectrograms(specPath, size):
     for filename in os.listdir(specPath):
         if filename.endswith(".png"):
             sliceSpectrogram(specPath, filename, size)
+
+def createTestSlicesFromSpectrograms(specPath, size):
+    for filename in os.listdir(specPath):
+        if filename.endswith(".png"):
+            sliceTestSpectrogram(specPath, filename, size)

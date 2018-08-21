@@ -97,12 +97,9 @@ def createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
     return train_x, train_y, validation_x, validation_y
 ######################
 
-def createKerasTestDataFromSlices(slicePath, genres, sliceSize, validationRatio):
+def createKerasDataWithIdMusicFromSlices(slicePath, genres, sliceSize, validationRatio):
     data = []
-    
-
     for genre in genres:
-        print("Cteating test data with genre " + str(genre))
         #get slices
         filenames = os.listdir(slicePath+genre)
         filenames = [filename for filename in filenames]
@@ -117,11 +114,21 @@ def createKerasTestDataFromSlices(slicePath, genres, sliceSize, validationRatio)
             imgData = imgData/255.
             label = [1. if genre == g else 0. for g in genres]
             data.append((imgData, label,filename.split('_')[1]))
-        print("Cteate test data with genre " + str(genre) + " succes")
-
     #splitting
     test_x,test_y,idMusic = zip(*data)
     return np.asarray(test_x).reshape([-1, sliceSize, sliceSize, 1]), np.array(test_y), np.array(idMusic)
+
+def createKerasTestDataFromSlices(slicePath, sliceSize, validationRatio):
+    data = []
+    filenames = os.listdir(slicePath)
+    filenames = [filename for filename in filenames]
+    for filename in filenames:
+        img = Image.open(slicePath+"/"+filename)
+        imgData = np.asarray(img, dtype=np.uint8)
+        imgData = imgData/255.
+        data.append((imgData,filename.split('_')[0]))
+    test_x,idMusic = zip(*data)
+    return np.asarray(test_x).reshape([-1, sliceSize, sliceSize, 1]), np.array(idMusic)
 
 def getDatasetName(sliceSize):
     name = "{}sliceSize".format(sliceSize)

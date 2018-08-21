@@ -25,6 +25,7 @@ nClasses = len(genres)
 train_x, train_y, validation_x, validation_y = getKerasDataset(slicePath, genres, sliceSize, validationRatio)
 print(train_y.shape)
 model = createKerasModel(128,nClasses)
+model.load_weights('keras_model.h5')
 
 # Take a look at the model summary
 model.summary()
@@ -36,7 +37,7 @@ model.compile(
     )
 
 model.fit(train_x, train_y, epochs=nEpoch, validation_data=(validation_x, validation_y), batch_size=batchSize)
-model.save('keras_model.h5')
+model.save('keras_model2.h5')
 """
 test_loss, test_acc = model.evaluate(validation_x, validation_y)
 

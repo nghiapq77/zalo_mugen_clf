@@ -1,10 +1,5 @@
 data
 checkpoint
-melspectro.py
-test.py
 *.csv
 *.h5
 *.pyc
-
-
-

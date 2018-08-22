@@ -1,5 +1,6 @@
 #Path
 datasetPath = "data/kerasDataset/"
+melspectroDatasetPath = "data/melspectroDatasetPath/"
 #Spectrogram resolution
 pixelPerSecond = 10
 
@@ -12,4 +13,4 @@ validationRatio = 0.2
 #Model parameters
 batchSize = 128
 learningRate = 0.000001
-nEpoch = 1
+nEpoch = 5

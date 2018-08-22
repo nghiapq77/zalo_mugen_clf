@@ -8,22 +8,27 @@ from tensorflow import keras
 
 #from __future__ import absolute_import, division, print_function
 import os
+import csv
 import random
 import string
 import time
 start_time = time.time()
 from config import sliceSize, validationRatio, batchSize, nEpoch
 from songToData import createSlicesFromSpectrograms, createSpectrogramsFromAudio
-from model import getDataset, createModel, createKerasModel
+from model import getDataset, createKerasModel
 from model import getKerasDataset
 
 slicePath = "data/train_full/spectrograms/slices/"
-genres = os.listdir(slicePath)
-genres = [filename for filename in genres if os.path.isdir(slicePath+filename)]
+csvfilepath = os.path.join("data/", "genres.csv")
+genres = []
+with open(csvfilepath, mode='r') as infile:
+    reader = csv.reader(infile)
+    for rows in reader:
+        genres.append(int(rows[0]))
 nClasses = len(genres)
 
 train_x, train_y, validation_x, validation_y = getKerasDataset(slicePath, genres, sliceSize, validationRatio)
-print(train_y.shape)
+
 model = createKerasModel(128,nClasses)
 model.load_weights('keras_model.h5')
 

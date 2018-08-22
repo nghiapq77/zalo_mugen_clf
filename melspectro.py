@@ -2,8 +2,6 @@
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 """"""
-import time
-start_time = time.time()
 import os
 import csv
 import numpy as np
@@ -17,8 +15,9 @@ MEL_KWARGS = {
     'n_mels': N_MELS
 }
 import errno
-from config import validationRatio, sliceSize
+from config import validationRatio, sliceSize, melspectroDatasetPath
 from subprocess import Popen, PIPE, STDOUT
+from random import shuffle
 
 #Define current path
 currentPath = os.path.dirname(os.path.realpath(__file__))
@@ -37,7 +36,7 @@ def createFeaturesFromAudio(filename, enforce_shape=None):
     features[features == 0] = 1e-6
     return (np.log(features), float(new_input.shape[0]) / sample_rate)
 
-def createSlicesFromAudio(filename, size):
+def sliceAudio(filename, size):
     tmp, _ = createFeaturesFromAudio(filename)
     nSamples = int(tmp.shape[0]/size)
     slices = []
@@ -47,10 +46,15 @@ def createSlicesFromAudio(filename, size):
         slices.append(slice_i)
     return slices
 
-def createDatasetFromAudio(audioPath, genres, sliceSize, validationRatio):
+def createSlicesFromAudio(audioPath, genres, sliceSize, validationRatio):
+    #creating folders
     slicePath = os.path.join(audioPath, "slices/")
     if not os.path.exists(slicePath):
         os.mkdir(slicePath)
+    for g in genres:
+        path = os.path.join(slicePath, "{}".format(g))
+        if not os.path.exists(path):
+            os.mkdir(path)
     extractedFolder = os.path.join(audioPath, "extractedMP3/")
     if not os.path.exists(extractedFolder):
         os.mkdir(extractedFolder)
@@ -63,12 +67,12 @@ def createDatasetFromAudio(audioPath, genres, sliceSize, validationRatio):
             name = rows[0]
             audiofilepath = os.path.join(audioPath, name)
             if os.path.exists(audiofilepath):
-                slices = createSlicesFromAudio(audiofilepath, sliceSize)
+                slices = sliceAudio(audiofilepath, sliceSize)
                 label = [1. if genre == g else 0. for g in genres]
                 i = 0
                 for slice_i in slices:
                     data = (slice_i, label)
-                    outfile = os.path.join(slicePath, "{}_{}.npy".format(name[:-4], i))
+                    outfile = os.path.join(slicePath, "{}/{}_{}.npy".format(genre, name[:-4], i))
                     np.save(outfile, data)
                     i+=1
                 #move trained mp3 to another folder
@@ -79,23 +83,60 @@ def createDatasetFromAudio(audioPath, genres, sliceSize, validationRatio):
                     print errors
                 print("Finished processing file {}".format(name))
 
-def getDataset(audioPath, genres, sliceSize, validationRatio):
-    if not os.path.isfile(audioPath+"train_x.npy"):
-        print("Creating dataset")
-        createDatasetFromAudio(audioPath, genres, sliceSize, validationRatio)
-    else:
-        print("Using existing dataset")
-    #TODO
-    #get all train/validating data
-    
-    return train_x, train_y, validation_x, validation_y
+def createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
+    if not os.path.exists(melspectroDatasetPath):
+        os.mkdir(melspectroDatasetPath)
+    data = []
+    for genre in genres:
+        filenames = os.listdir(slicePath+str(genre))
+        filenames = [filename for filename in filenames]
+        #capping maximum number of slices
+        cappedSlices = len(filenames)/20
+        shuffle(filenames)
+        filenames = filenames[:cappedSlices]
+        for i in range(cappedSlices):
+            infile = os.path.join(slicePath, "{}/{}".format(genre, filenames[i]))
+            data.append(np.load(infile))
+    shuffle(data)
+    x, y = zip(*data)
+    nValidation = int(len(x)*validationRatio)
+    nTrain = len(x)-nValidation
+    train_x = np.asarray(x[:nTrain]).reshape([-1, sliceSize, sliceSize, 1])
+    train_y = np.asarray(y[:nTrain])
+    validation_x = np.asarray(x[-nValidation:]).reshape([-1, sliceSize, sliceSize, 1])
+    validation_y = np.asarray(y[-nValidation:])
+    #saving
+    outfile = os.path.join(melspectroDatasetPath, "train_x.npy")
+    np.save(outfile, train_x)
+    outfile = os.path.join(melspectroDatasetPath, "train_y.npy")
+    np.save(outfile, train_y)
+    outfile = os.path.join(melspectroDatasetPath, "validation_x.npy")
+    np.save(outfile, validation_x)
+    outfile = os.path.join(melspectroDatasetPath, "validation_y.npy")
+    np.save(outfile, validation_y)
 
-csvfilepath = os.path.join("data/train/", "genres.csv")
+def getDataset(slicePath, genres, sliceSize, validationRatio):
+    if not os.path.isfile(melspectroDatasetPath+"train_x.npy"):
+        print("[+] Creating dataset with slices of size {}".format(sliceSize))
+        createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio) 
+    else:
+        print("[+] Using existing dataset")
+    #loading dataset
+    infile = os.path.join(melspectroDatasetPath, "train_x.npy")
+    train_x = np.load(infile)
+    infile = os.path.join(melspectroDatasetPath, "train_y.npy")
+    train_y = np.load(infile)
+    infile = os.path.join(melspectroDatasetPath, "validation_x.npy")
+    validation_x = np.load(infile)
+    infile = os.path.join(melspectroDatasetPath, "validation_y.npy")
+    validation_y = np.load(infile)
+    return train_x, train_y, validation_x, validation_y
+"""
+csvfilepath = os.path.join("data/", "genres.csv")
 genres = []
 with open(csvfilepath, mode='r') as infile:
     reader = csv.reader(infile)
     for rows in reader:
         genres.append(int(rows[0]))
-createDatasetFromAudio("data/train/", genres, sliceSize, validationRatio)
-
-print("--- %s seconds ---" % (time.time() - start_time))
+createSlicesFromAudio("data/train_full/", genres, sliceSize, validationRatio)
+"""

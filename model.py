@@ -75,6 +75,7 @@ def createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
         filenames = [filename for filename in filenames]
         #capped number of slices
         cappedSlices = 5000
+        shuffle(filenames)
         filenames = filenames[:cappedSlices] 
         #adding data
         for filename in filenames:
@@ -222,30 +223,3 @@ def createKerasModel(imageSize,nClasses):
         keras.layers.Dense(nClasses, activation='softmax')
     ])
     return model
-    
-#building model
-def createModel(nbClasses,imageSize,learningRate):
-	print("[+] Creating model...")
-	convnet = input_data(shape=[None, imageSize, imageSize, 1], name='input')
-
-	convnet = conv_2d(convnet, 64, 2, activation='elu', weights_init="Xavier")
-	convnet = max_pool_2d(convnet, 2)
-	
-	convnet = conv_2d(convnet, 128, 2, activation='elu', weights_init="Xavier")
-	convnet = max_pool_2d(convnet, 2)
-
-	convnet = conv_2d(convnet, 256, 2, activation='elu', weights_init="Xavier")
-	convnet = max_pool_2d(convnet, 2)
-
-	convnet = conv_2d(convnet, 512, 2, activation='elu', weights_init="Xavier")
-	convnet = max_pool_2d(convnet, 2)
-
-	convnet = fully_connected(convnet, 1028, activation='elu')
-	convnet = dropout(convnet, 0.5)
-
-	convnet = fully_connected(convnet, nbClasses, activation='softmax')
-	convnet = regression(convnet, learning_rate= learningRate, optimizer='rmsprop', loss='categorical_crossentropy')
-
-	model = tflearn.DNN(convnet)
-	print("    Model created!")
-	return model

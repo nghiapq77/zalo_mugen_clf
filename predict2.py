@@ -20,7 +20,7 @@ slicePath = "data/test_full/spectrograms/slice/"
 
 print("Loading model")
 model = createKerasModel(128,10)
-model.load_weights('keras_model.h5')
+model.load_weights('keras_model_div6.h5')
 print("Load model successfully")
 
 print("Creating test data from slices")
@@ -61,15 +61,15 @@ result = [['Id',' Genre']]
 result1 = [['Id',' Genre']]
 index = 0;
 for i in listId:
-    result.append([ str(i)+'.mp3', str(predictCount[index])  ])
-    result1.append([ str(i)+'.mp3', str(predictCount1[index]) ])
+    result.append([ str(i)+'.mp3', str(predictCount[index] + 1 )  ])
+    result1.append([ str(i)+'.mp3', str(predictCount1[index] +1) ])
     index = index +1
 
-with open("result.csv", 'wb') as resultFile:
+with open("result_keras_model_div6.csv", 'wb') as resultFile:
     wr = csv.writer(resultFile, dialect='excel')
     wr.writerows(result)
 
-with open("result1.csv", 'wb') as resultFile:
+with open("result1_keras_model_div6.csv", 'wb') as resultFile:
     wr = csv.writer(resultFile, dialect='excel')
     wr.writerows(result1)
 

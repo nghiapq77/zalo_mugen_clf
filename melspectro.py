@@ -91,7 +91,7 @@ def createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
         filenames = os.listdir(slicePath+str(genre))
         filenames = [filename for filename in filenames]
         #capping maximum number of slices
-        cappedSlices = len(filenames)/20
+        cappedSlices = len(filenames)/3
         shuffle(filenames)
         filenames = filenames[:cappedSlices]
         for i in range(cappedSlices):
@@ -130,13 +130,5 @@ def getDataset(slicePath, genres, sliceSize, validationRatio):
     validation_x = np.load(infile)
     infile = os.path.join(melspectroDatasetPath, "validation_y.npy")
     validation_y = np.load(infile)
+    print("[+] Dataset loaded successfully")
     return train_x, train_y, validation_x, validation_y
-"""
-csvfilepath = os.path.join("data/", "genres.csv")
-genres = []
-with open(csvfilepath, mode='r') as infile:
-    reader = csv.reader(infile)
-    for rows in reader:
-        genres.append(int(rows[0]))
-createSlicesFromAudio("data/train_full/", genres, sliceSize, validationRatio)
-"""

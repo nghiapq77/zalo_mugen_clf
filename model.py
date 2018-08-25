@@ -67,24 +67,24 @@ def createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
 ###############3
 """datasetforkeras"""
 def createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
-    data = []
-    
-    for genre in genres:
-        #get slices
-        filenames = os.listdir(slicePath+genre)
-        filenames = [filename for filename in filenames]
-        #capped number of slices
-        cappedSlices = 5000
-        filenames = filenames[:cappedSlices] 
-        #adding data
-        for filename in filenames:
-            img = Image.open(slicePath+genre+"/"+filename)
-            imgData = np.asarray(img, dtype=np.uint8)
-            imgData = imgData/255.
-            label = [1. if genre == g else 0. for g in genres]
-            data.append((imgData, label))
+    print("[+] Creating dataset")
+    data = []  
+    #get slices
+    filenames = os.listdir(slicePath)
+    filenames = [filename for filename in filenames]
+    shuffle(filenames)
+    #capped number of slices
+    cappedSlices = 50000
+    filenames = filenames[:cappedSlices] 
+    #adding data
+    for filename in filenames:
+        img = Image.open(slicePath+"/"+filename)
+        imgData = np.asarray(img, dtype=np.uint8)
+        imgData = imgData/255.
+        genre = filename.split('_')[0]
+        label = [1. if genre == g else 0. for g in genres]
+        data.append((imgData, label))
 
-    shuffle(data)
     #splitting
     x,y = zip(*data)
     nValidation = int(len(x)*validationRatio)
@@ -99,21 +99,21 @@ def createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio):
 
 def createKerasDataWithIdMusicFromSlices(slicePath, genres, sliceSize, validationRatio):
     data = []
-    for genre in genres:
-        #get slices
-        filenames = os.listdir(slicePath+genre)
-        filenames = [filename for filename in filenames]
-        #capped number of slices
-        cappedSlices = 100
-        shuffle(filenames)
-        filenames = filenames[:cappedSlices] 
-        #adding data
-        for filename in filenames:
-            img = Image.open(slicePath+genre+"/"+filename)
-            imgData = np.asarray(img, dtype=np.uint8)
-            imgData = imgData/255.
-            label = [1. if genre == g else 0. for g in genres]
-            data.append((imgData, label,filename.split('_')[1]))
+    #get slices
+    filenames = os.listdir(slicePath)
+    filenames = [filename for filename in filenames]
+    #capped number of slices
+    cappedSlices = 5000
+    shuffle(filenames)
+    filenames = filenames[:cappedSlices] 
+    #adding data
+    for filename in filenames:
+        img = Image.open(slicePath+"/"+filename)
+        imgData = np.asarray(img, dtype=np.uint8)
+        imgData = imgData/255.
+        genre = filename.split('_')[0]
+        label = [1. if genre == g else 0. for g in genres]
+        data.append((imgData, label,filename.split('_')[1]))
     #splitting
     test_x,test_y,idMusic = zip(*data)
     return np.asarray(test_x).reshape([-1, sliceSize, sliceSize, 1]), np.array(test_y), np.array(idMusic)
@@ -135,6 +135,7 @@ def getDatasetName(sliceSize):
     return name
 
 def saveDataset(train_x, train_y, validation_x, validation_y, genres, sliceSize):
+    print("[+] Saving dataset")
     if not os.path.exists(os.path.dirname(datasetPath)):
         try:
             os.makedirs(os.path.dirname(datasetPath))
@@ -149,6 +150,7 @@ def saveDataset(train_x, train_y, validation_x, validation_y, genres, sliceSize)
     print("    Dataset saved!")
 
 def loadDataset(genres, sliceSize):
+    print('[+]Loading data')
     datasetName = getDatasetName(sliceSize)
     train_x = pickle.load(open("{}train_x_{}.p".format(datasetPath,datasetName), "rb" ))
     train_y = pickle.load(open("{}train_y_{}.p".format(datasetPath,datasetName), "rb" ))
@@ -162,7 +164,7 @@ def getDataset(slicePath, genres, sliceSize, validationRatio):
     print("[+] Dataset name: {}".format(getDatasetName(sliceSize)))
     if not os.path.isfile(datasetPath+"train_x_"+getDatasetName(sliceSize)+".p"):
         print("[+] Creating dataset with slices of size {}".format(sliceSize))
-        createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio) 
+        return createDatasetFromSlices(slicePath, genres, sliceSize, validationRatio) 
     else:
         print("[+] Using existing dataset")
     
@@ -171,7 +173,7 @@ def getKerasDataset(slicePath, genres, sliceSize, validationRatio):
     print("[+] Dataset name: {}".format(getDatasetName(sliceSize)))
     if not os.path.isfile(datasetPath+"train_x_"+getDatasetName(sliceSize)+".p"):
         print("[+] Creating dataset with slices of size {}".format(sliceSize))
-        createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio) 
+        return createKerasDatasetFromSlices(slicePath, genres, sliceSize, validationRatio) 
     else:
         print("[+] Using existing dataset")
     

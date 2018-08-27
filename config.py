@@ -1,18 +1,15 @@
-#Path
-datasetPath = "data/kerasDataset/"
-#Spectrogram resolution
-pixelPerSecond = 10
-
-#Slice parameters
-sliceSize = 128
-
 #Genres
 genres = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 
-#dataset param
-validationRatio = 0.2
+#Agrument for main.py
+listArgument = [
+    'mode1',
+    'mode2',
+    'createSpectrogram',
+    'createSlice',
+    'createData',
+    'train',
+    'test',
+]
 
-#Model parameters
-batchSize = 128
-learningRate = 0.000001
-nEpoch = 10
+helpMessage = "run with mode1 of data | run with mode2 of data | create spectrogram from .mp3 (only with mode1) | create slice from spectrogram (only with mode1) | create data from slice from slice or mp3 | train model | test model"

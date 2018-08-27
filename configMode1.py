@@ -1,7 +1,7 @@
 #Path
 trainCsvPath = "data/train.csv"
 datasetPath = "data/mode1/dataset/"
-audioPath = "../data/train_full/"
+audioPath = "data/train_full/"
 spectrogramPath = "data/mode1/spectrogram/"
 slicePath = "data/mode1/slice/"
 

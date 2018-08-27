@@ -1,6 +1,7 @@
 from subprocess import Popen, PIPE, STDOUT
 from random import shuffle
 
+import gc
 import os
 import csv
 import numpy as np 
@@ -92,10 +93,13 @@ def createDataset():
         filenames = os.listdir(slicePath+genre)
         filenames = [filename for filename in filenames]
         for filename in filenames:
-            if not filename.endswith(".png"):
+            if not filename.endswith(".npy"):
                 continue
             infile = os.path.join(slicePath, "{}/{}".format(genre, filename))
-            data.append(np.load(infile))
+            idMusic = filename.split('_')[0]
+            npData = np.load(infile)
+            newData = tuple(npData)+(idMusic,)
+            data.append(np.asarray(newData))
 
     #################Splitting##############
     shuffle(data)

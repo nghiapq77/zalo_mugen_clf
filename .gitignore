@@ -1,5 +1,4 @@
 data
-checkpoint
 *.csv
 *.h5
 *.pyc

@@ -10,7 +10,7 @@ def createKerasModel(imageSize,nClasses):
 
     model.add(Flatten())
 
-    model.add(Dense(10,activation='softmax'))
+    model.add(Dense(10)
     model.add(Activation('sigmoid'))
 
     return model

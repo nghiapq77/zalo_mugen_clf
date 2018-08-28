@@ -25,7 +25,7 @@ for denseLayer in denseLayers:
     for layerSize in layerSizes:
         for convLayer in convLayers:
             NAME = "{}_conv_{}_nodes_{}_dense_{}".format(convLayer, layerSize, denseLayer, int(time.time()))
-            print(NAME)
+            print("[+] Running "+NAME)
             model = Sequential()
 
             model.add(Conv2D(layerSize, (3, 3), input_shape=train_x.shape[1:]))
@@ -43,10 +43,10 @@ for denseLayer in denseLayers:
                 model.add(Dense(layerSize))
                 model.add(Activation('relu'))
 
-            model.add(Dense(10,activation='softmax'))
-            model.add(Activation('sigmoid'))
+            model.add(Dense(10))
+            model.add(Activation('softmax'))
 
-            tensorboard = TensorBoard(log_dir="logs/{}".format(NAME))
+            tensorboard = TensorBoard(log_dir="log/{}".format(NAME))
 
             model.compile(
                             loss='binary_crossentropy',
@@ -57,8 +57,7 @@ for denseLayer in denseLayers:
                         train_x, train_y,
                         validation_data=(validation_x, validation_y),
                         batch_size=128,
-                        epochs=3,
-                        validation_split=0.2,
+                        epochs=2,
                         callbacks=[tensorboard]
                     )
             model.save(NAME+'.h5')

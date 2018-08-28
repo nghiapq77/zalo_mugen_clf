@@ -10,6 +10,7 @@ listArgument = [
     'createData',
     'train',
     'test',
+    'predict'
 ]
 
 helpMessage = "run with mode1 of data | run with mode2 of data | create spectrogram from .mp3 (only with mode1) | create slice from spectrogram (only with mode1) | create data from slice from slice or mp3 | train model | test model"

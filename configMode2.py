@@ -3,7 +3,6 @@ trainCsvPath = "data/train.csv"
 datasetPath = "data/mode2/dataset/"
 audioPath = "data/train_full/"
 slicePath = "data/mode2/slice/"
-extractedFolderPath = "data/mode2/extractedFolder/"
 
 #Name file
 nameTrain_x = 'train_x.npy'

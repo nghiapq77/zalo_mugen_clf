@@ -31,15 +31,14 @@ def train():
     nClasses = len(genres)
     print("[+] Creating model")
     model = createKerasModel(conf.sliceSize,nClasses)
-    # model.load_weights('keras_model.h5')
+    model.load_weights('1_conv_32_nodes_0_dense_1535469438.h5')
     model.summary()
     print("[+] Getting dataset")
     train_x, train_y, validation_x, validation_y, test_x, test_y , test_id = getDataset()
-    class_weights = getClassWeight(train_y)
     print("[+] Fitting model")
 
     model.compile(
-    loss='categorical_crossentropy', 
+    loss='binary_crossentropy', 
     optimizer='adam', 
     metrics=['accuracy']
     )
@@ -49,6 +48,5 @@ def train():
         epochs=conf.nEpoch,
         validation_data=(validation_x, validation_y),
         batch_size=conf.batchSize,
-        class_weight=class_weights
     )
     model.save('data/mode2/keras_model.h5')

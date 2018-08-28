@@ -8,7 +8,7 @@ import numpy as np
 import librosa as lbr
 
 from config import genres
-from configMode2 import trainCsvPath, audioPath, slicePath, datasetPath, extractedFolderPath
+from configMode2 import trainCsvPath, audioPath, slicePath, datasetPath
 from configMode2 import pixelPerSecond, sliceSize, testRatio, validationRatio
 from configMode2 import nameTrain_x, nameTrain_y, nameVal_x, nameVal_y, nameTest_x, nameTest_y, nameTest_id
 
@@ -57,8 +57,6 @@ def createSlicesFromAudio():
         path = os.path.join(slicePath, "{}".format(g))
         if not os.path.exists(path):
             os.mkdir(path)
-    if not os.path.exists(extractedFolderPath):
-        os.mkdir(extractedFolderPath)
     with open(trainCsvPath, mode='r') as infile:
         reader = csv.reader(infile)
         for rows in reader:
@@ -74,12 +72,6 @@ def createSlicesFromAudio():
                     outfile = os.path.join(slicePath, "{}/{}_{}.npy".format(genre, name[:-4], i))
                     np.save(outfile, data)
                     i+=1
-                #move trained mp3 to another folder
-                command = "mv {} {}".format(audioFilePath, extractedFolderPath)
-                p = Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT, close_fds=True, cwd=currentPath)
-                _, errors = p.communicate()
-                if errors:
-                    print errors
                 print("Finished processing file {}".format(name))
 
 ########################### Process slice ##############################

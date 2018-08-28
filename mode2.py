@@ -2,6 +2,7 @@ import configMode2 as conf
 from config import genres
 from kerasModel import createKerasModel
 from libMode2 import createSlicesFromAudio, createDataset, getDataset
+from lib import getClassWeight
 
 def printConfig():
     print("=========================================================================")

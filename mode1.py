@@ -56,4 +56,4 @@ def train():
         batch_size=conf.batchSize,
         class_weight=class_weights
     )
-    model.save('keras_model.h5')
+    model.save('data/mode1/keras_model.h5')

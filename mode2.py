@@ -31,7 +31,7 @@ def train():
     nClasses = len(genres)
     print("[+] Creating model")
     model = createKerasModel(conf.sliceSize,nClasses)
-    model.load_weights('keras_model.h5')
+    # model.load_weights('keras_model.h5')
     model.summary()
     print("[+] Getting dataset")
     train_x, train_y, validation_x, validation_y, test_x, test_y , test_id = getDataset()

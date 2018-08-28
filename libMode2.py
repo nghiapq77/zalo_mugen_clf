@@ -62,7 +62,7 @@ def createSlicesFromAudio():
     with open(trainCsvPath, mode='r') as infile:
         reader = csv.reader(infile)
         for rows in reader:
-            genre = int(rows[1])
+            genre = rows[1]
             name = rows[0]
             audioFilePath = os.path.join(audioPath, name)
             if os.path.exists(audioFilePath):
